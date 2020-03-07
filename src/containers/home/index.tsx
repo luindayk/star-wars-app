@@ -1,57 +1,54 @@
-import { Button, Input, Text, Layout } from '@ui-kitten/components';
+import { Text, Layout, Card, Spinner } from '@ui-kitten/components';
 import React, { Component, } from 'react';
 import { inject, observer } from 'mobx-react';
 import { StyleSheet } from 'react-native';
 
 import HomeStore from '../../stores/home.store';
 
+import { ROUTES_NAMES } from '../../routes';
+import { ScrollView } from 'react-native-gesture-handler';
+
 interface Props {
-    homeStore: HomeStore
+    homeStore: HomeStore,
+    navigation: any
 }
 
 @inject('homeStore')
 @observer
 export default class Home extends Component<Props> {
 
-    render() {
-        const { etanol, gasolina, resultado, calculate, handleForm } = this.props.homeStore;
+    async componentDidMount() {
+        const { getFilms } = this.props.homeStore;
+        await getFilms();
+    }
 
-        return (<>
-            <Layout style={styles.layout}>
-                <Layout style={styles.group}>
-                    <Text style={styles.text}>Etanol:</Text>
-                    <Input value={etanol.toString()} keyboardType='numeric' onChangeText={(etanol) => handleForm({ etanol })} />
-                    <Text style={styles.text}>Gasolina:</Text>
-                    <Input value={gasolina.toString()} keyboardType='numeric' onChangeText={(gasolina) => handleForm({ gasolina })} />
-                    <Button style={styles.button} onPress={() => calculate()} >CALCULAR</Button>
-                    <Text style={styles.paragraph}>{resultado}</Text>
-                </Layout>
-            </Layout>
-        </>);
+    render() {
+        const { films } = this.props.homeStore;
+
+        const navigateScreen = ( id: number ) => {
+            const { navigate } = this.props.navigation;
+            navigate(ROUTES_NAMES.Film, { id });
+        }
+
+        return (<Layout style={styles.layout}>
+            <ScrollView>
+                {films.map((film, index) => (
+                    <Card onPress={() => navigateScreen(film.id)} key={index}>
+                        <Text style={styles.title}>{film.title}</Text>
+                        <Text>Episode {film.episode_id.toString()}</Text>
+                    </Card>
+                ))}
+            </ScrollView>
+        </Layout>);
     }
 }
 
 const styles = StyleSheet.create({
-    paragraph: {
-        margin: 24,
-        fontSize: 18,
-        fontWeight: 'bold',
-        textAlign: 'center',
-    },
-    button: {
-        marginTop: 24,
-        backgroundColor: '#598BFF',
-        borderColor: '#598BFF',
-        fontSize: 22
-    },
     layout: {
         flex: 1,
+        backgroundColor: 'black'
     },
-    group: {
-        margin: 24
-    },
-    text: {
-        fontSize: 20,
-        marginTop: 10
+    title: {
+        fontSize: 20
     }
 });
